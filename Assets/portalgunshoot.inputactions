@@ -11,7 +11,8 @@
                     "id": "3ad348a8-31d4-4ea5-bb72-5f9e18671c52",
                     "expectedControlType": "Button",
                     "processors": "",
-                    "interactions": ""
+                    "interactions": "",
+                    "initialStateCheck": false
                 },
                 {
                     "name": "ShootFarPortal",
@@ -19,7 +20,8 @@
                     "id": "75ee5a0b-159e-42c6-8ff9-b245dd9647e5",
                     "expectedControlType": "Button",
                     "processors": "",
-                    "interactions": ""
+                    "interactions": "",
+                    "initialStateCheck": false
                 },
                 {
                     "name": "SwitchControls",
@@ -27,7 +29,8 @@
                     "id": "fb313d78-7490-48ef-9513-e791fc0966f8",
                     "expectedControlType": "Button",
                     "processors": "",
-                    "interactions": ""
+                    "interactions": "",
+                    "initialStateCheck": false
                 },
                 {
                     "name": "PointToTeleport",
@@ -35,7 +38,8 @@
                     "id": "0b800262-59d1-482b-b092-07851d4a2636",
                     "expectedControlType": "Button",
                     "processors": "",
-                    "interactions": ""
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -52,8 +56,52 @@
                 },
                 {
                     "name": "",
+                    "id": "92d2580c-2981-4e21-a8cf-6ba89666277e",
+                    "path": "<OpenVROculusTouchController>{RightHand}/primaryButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ShootClosePortal",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "8d4540df-e1d9-4dba-9470-db5d9eee0b22",
+                    "path": "<OpenVROculusTouchController>{RightHand}/primaryButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ShootClosePortal",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "3f5aae54-decf-4fd7-aa52-08b8298f7e02",
                     "path": "<XRController>{RightHand}/secondaryButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ShootFarPortal",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "c07cfa5e-07ac-40e1-a09e-821342c56962",
+                    "path": "<OculusTouchController>{RightHand}/secondaryButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ShootFarPortal",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "74fcdfd3-03c5-4f98-b961-f30fecfd2ad3",
+                    "path": "<OpenVROculusTouchController>{RightHand}/secondaryButton",
                     "interactions": "",
                     "processors": "",
                     "groups": "",

@@ -1,7 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.InputSystem;
+﻿using UnityEngine;
 
 public class portalgun : MonoBehaviour
 {
@@ -44,19 +41,20 @@ public class portalgun : MonoBehaviour
         lineRenderer = GetComponent<LineRenderer>();
 
         controls = new Portalgunshoot();
+        controls.Enable();
 
         controls.Player.SwitchControls.performed += ctx => switchControls();
 
         controls.Player.ShootClosePortal.performed += ctx => { if (usePortals) { closebuttondown = farbuttondown ^ true; } };
-
         controls.Player.ShootClosePortal.canceled += ctx => { if (usePortals) { ShootClose(); } } ;
 
         controls.Player.ShootFarPortal.performed += ctx => { if (usePortals) { farbuttondown = closebuttondown ^ true; } } ;
-
         controls.Player.ShootFarPortal.canceled += ctx => { if (usePortals) { ShootFar(); } };
 
-        controls.Player.PointToTeleport.performed += ctx => { if (!usePortals) { pointToTeleportButtonDown = true; } };
+        controls.Player.ShootFarPortal.performed += ctx => Debug.Log("Down");
+        controls.Player.ShootFarPortal.canceled += ctx => Debug.Log("Up");
 
+        controls.Player.PointToTeleport.performed += ctx => { if (!usePortals) { pointToTeleportButtonDown = true; } };
         controls.Player.PointToTeleport.canceled += ctx => { if (!usePortals) { pointToTeleport(); } };
 
     }
@@ -69,7 +67,6 @@ public class portalgun : MonoBehaviour
         locationMarker.SetActive(false);
         farCornerWasShot = false;
         closeCornerWasShot = false;
-
     }
 
     void pointToTeleport()
@@ -95,139 +92,109 @@ public class portalgun : MonoBehaviour
 
     void ShootClose()
     {
-
-        if(!closebuttondown)
-        {
-            return;
-        }
-
+        if (!closebuttondown) return;
         closebuttondown = false;
 
         RaycastHit hit;
         Ray ray = new Ray(transform.position, transform.forward);
-        if (Physics.Raycast(ray, out hit, 100))
+        if (Physics.Raycast(ray, out hit, 100) && hit.collider.gameObject.tag == "Floor" && inPlayZone(hit.point))
         {
             Collider[] collidingColliders = Physics.OverlapCapsule(new Vector3(hit.point.x, 0, hit.point.z), new Vector3(hit.point.x, 3, hit.point.z), 0.675f);
-            bool obstructed = false;
-            for (int a = 0; a < collidingColliders.Length; a = a + 1)
+            foreach (Collider collidingCollider in collidingColliders)
             {
-                if (collidingColliders[a].transform.tag != "Player" && collidingColliders[a].transform.tag != "Floor")
-                {
-                    obstructed = true;
-                    break;
-                }
+                if (!collidingCollider.transform.CompareTag("Player") && !collidingCollider.transform.CompareTag("Floor")) return;
             }
 
-            if (hit.collider.gameObject.tag == "Floor" && inPlayZone(hit.point) && !obstructed)
+                
+            float oldY = closeCorner.transform.position.y;
+            closeCorner.transform.position = new Vector3(hit.point.x, oldY, hit.point.z);
+            Vector3 toOrigin = playZoneOrigin.position - closeCorner.transform.position;
+            closeCorner.transform.forward = Quaternion.Euler(0, 135, 0) * toOrigin.normalized;
+            farCorner.transform.rotation = closeCorner.transform.rotation;
+
+            audioSource.PlayOneShot(portalShootClip);
+
+            if (closeCorner.activeSelf && farCorner.activeSelf)
             {
+                closeCorner.SetActive(false);
+                farCorner.SetActive(false);
+                locationMarker.SetActive(true);
+                locationMarker.transform.position = closeCorner.transform.position;
+                closeCornerWasShot = true;
+                return;
+            }
                 
-                float oldY = closeCorner.transform.position.y;
-                closeCorner.transform.position = new Vector3(hit.point.x, oldY, hit.point.z);
-                Vector3 toOrigin = playZoneOrigin.position - closeCorner.transform.position;
-                closeCorner.transform.forward = Quaternion.Euler(0, 135, 0) * toOrigin.normalized;
-                farCorner.transform.rotation = closeCorner.transform.rotation;
+            if (!farCornerWasShot)
+            {
+                closeCornerWasShot = true;
 
-                audioSource.PlayOneShot(portalShootClip);
+                locationMarker.SetActive(true);
+                locationMarker.transform.position = closeCorner.transform.position;
 
-                if (closeCorner.activeSelf && farCorner.activeSelf)
-                {
-                    closeCorner.SetActive(false);
-                    farCorner.SetActive(false);
-                    locationMarker.SetActive(true);
-                    locationMarker.transform.position = closeCorner.transform.position;
-                    closeCornerWasShot = true;
-                    return;
-                }
-                
-                if (!farCornerWasShot)
-                {
-                    closeCornerWasShot = true;
-
-                    locationMarker.SetActive(true);
-                    locationMarker.transform.position = closeCorner.transform.position;
-
-                    return;
-                }
-
-                if (farCornerWasShot)
-                {
-                    closeCorner.SetActive(true);
-                    farCorner.SetActive(true);
-                    locationMarker.SetActive(false);
-                    farCornerWasShot = false;
-                    closeCornerWasShot = false;
-                    return;
-                }
+                return;
             }
 
-
+            if (farCornerWasShot)
+            {
+                closeCorner.SetActive(true);
+                farCorner.SetActive(true);
+                locationMarker.SetActive(false);
+                farCornerWasShot = false;
+                closeCornerWasShot = false;
+                return;
+            }
         }
     }
 
     void ShootFar()
     {
-
-        if (!farbuttondown)
-        {
-            return;
-        }
-
+        if (!farbuttondown) return;
         farbuttondown = false;
 
         RaycastHit hit;
         Ray ray = new Ray(transform.position, transform.forward);
-        if (Physics.Raycast(ray, out hit, 100))
+        if (Physics.Raycast(ray, out hit, 100) && hit.collider.gameObject.tag == "Floor" && inFarPlayZone(hit.point))
         {
             Collider[] collidingColliders = Physics.OverlapCapsule(new Vector3(hit.point.x, 0, hit.point.z), new Vector3(hit.point.x, 3, hit.point.z), 0.675f);
-            bool obstructed = false;
-            for (int a = 0; a < collidingColliders.Length; a = a + 1)
+
+            foreach (Collider collidingCollider in collidingColliders)
             {
-                if (collidingColliders[a].transform.tag != "Player" && collidingColliders[a].transform.tag != "Floor")
-                {
-                    obstructed = true;
-                    break;
-                }
-            }
-            if (hit.collider.gameObject.tag == "Floor" && inFarPlayZone(hit.point) && !obstructed)
-            {
-
-                float oldY = farCorner.transform.position.y;
-                farCorner.transform.position = new Vector3(hit.point.x, oldY, hit.point.z);
-                farCorner.transform.rotation = closeCorner.transform.rotation;
-
-                audioSource.PlayOneShot(portalShootClip);
-
-                if (farCorner.activeSelf && closeCorner.activeSelf)
-                {
-                    farCorner.SetActive(false);
-                    closeCorner.SetActive(false);
-                    locationMarker.SetActive(true);
-                    locationMarker.transform.position = farCorner.transform.position;
-                    farCornerWasShot = true;
-                    return;
-                }
-
-                if (!closeCornerWasShot)
-                {
-                    farCornerWasShot = true;
-                    locationMarker.SetActive(true);
-                    locationMarker.transform.position = farCorner.transform.position;
-                    return;
-                }
-
-                if (closeCornerWasShot)
-                {
-                    farCorner.SetActive(true);
-                    closeCorner.SetActive(true);
-                    locationMarker.SetActive(false);
-                    farCornerWasShot = false;
-                    closeCornerWasShot = false;
-                    return;
-                }
-
+                if (!collidingCollider.transform.CompareTag("Player") && !collidingCollider.transform.CompareTag("Floor")) return;
             }
 
+            float oldY = farCorner.transform.position.y;
+            farCorner.transform.position = new Vector3(hit.point.x, oldY, hit.point.z);
+            farCorner.transform.rotation = closeCorner.transform.rotation;
 
+            audioSource.PlayOneShot(portalShootClip);
+
+            if (farCorner.activeSelf && closeCorner.activeSelf)
+            {
+                farCorner.SetActive(false);
+                closeCorner.SetActive(false);
+                locationMarker.transform.position = farCorner.transform.position;
+                locationMarker.SetActive(true);
+                farCornerWasShot = true;
+                return;
+            }
+
+            if (!closeCornerWasShot)
+            {
+                farCornerWasShot = true;
+                locationMarker.SetActive(true);
+                locationMarker.transform.position = farCorner.transform.position;
+                return;
+            }
+
+            if (closeCornerWasShot)
+            {
+                farCorner.SetActive(true);
+                closeCorner.SetActive(true);
+                locationMarker.SetActive(false);
+                farCornerWasShot = false;
+                closeCornerWasShot = false;
+                return;
+            }
         }
     }
 
