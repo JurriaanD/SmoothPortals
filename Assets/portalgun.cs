@@ -41,9 +41,8 @@ public class portalgun : MonoBehaviour
         lineRenderer = GetComponent<LineRenderer>();
 
         controls = new Portalgunshoot();
-        controls.Enable();
 
-        controls.Player.SwitchControls.performed += ctx => switchControls();
+        controls.Player.SwitchControls.performed += ctx => SwitchControls();
 
         controls.Player.ShootClosePortal.performed += ctx => { if (usePortals) { closebuttondown = farbuttondown ^ true; } };
         controls.Player.ShootClosePortal.canceled += ctx => { if (usePortals) { ShootClose(); } } ;
@@ -51,15 +50,11 @@ public class portalgun : MonoBehaviour
         controls.Player.ShootFarPortal.performed += ctx => { if (usePortals) { farbuttondown = closebuttondown ^ true; } } ;
         controls.Player.ShootFarPortal.canceled += ctx => { if (usePortals) { ShootFar(); } };
 
-        controls.Player.ShootFarPortal.performed += ctx => Debug.Log("Down");
-        controls.Player.ShootFarPortal.canceled += ctx => Debug.Log("Up");
-
         controls.Player.PointToTeleport.performed += ctx => { if (!usePortals) { pointToTeleportButtonDown = true; } };
-        controls.Player.PointToTeleport.canceled += ctx => { if (!usePortals) { pointToTeleport(); } };
-
+        controls.Player.PointToTeleport.canceled += ctx => { if (!usePortals) { PointToTeleport(); } };
     }
 
-    void switchControls()
+    void SwitchControls()
     {
         usePortals = !usePortals;
         closeCorner.SetActive(false);
@@ -69,25 +64,21 @@ public class portalgun : MonoBehaviour
         closeCornerWasShot = false;
     }
 
-    void pointToTeleport()
+    void PointToTeleport()
     {
         pointToTeleportButtonDown = false;
-        RaycastHit hit;
         Ray ray = new Ray(transform.position, transform.forward);
-        if (Physics.Raycast(ray, out hit, 100))
+        if (Physics.Raycast(ray, out RaycastHit hit, 100) && hit.collider.gameObject.CompareTag("Floor"))
         {
-            if (hit.collider.gameObject.tag == "Floor")
-            {
-                Vector3 relativePosition = playerHead.position - playZoneOrigin.position;
-                relativePosition.y = 0;
-                playZoneOrigin.transform.position = hit.point - relativePosition;
-            }
+            Vector3 relativePosition = playerHead.position - playZoneOrigin.position;
+            relativePosition.y = 0;
+            playZoneOrigin.transform.position = hit.point - relativePosition;
+
+            Animator anim = canvas.GetComponent<Animator>();
+            anim.Play("fade", 0, 0);
+
+            audioSource.PlayOneShot(teleportWooshClip);
         }
-
-        Animator anim = canvas.GetComponent<Animator>();
-        anim.Play("fade", 0, 0);
-
-        audioSource.PlayOneShot(teleportWooshClip);
     }
 
     void ShootClose()
@@ -95,17 +86,15 @@ public class portalgun : MonoBehaviour
         if (!closebuttondown) return;
         closebuttondown = false;
 
-        RaycastHit hit;
         Ray ray = new Ray(transform.position, transform.forward);
-        if (Physics.Raycast(ray, out hit, 100) && hit.collider.gameObject.tag == "Floor" && inPlayZone(hit.point))
+        if (Physics.Raycast(ray, out RaycastHit hit, 100) && hit.collider.gameObject.CompareTag("Floor") && InPlayZone(hit.point))
         {
             Collider[] collidingColliders = Physics.OverlapCapsule(new Vector3(hit.point.x, 0, hit.point.z), new Vector3(hit.point.x, 3, hit.point.z), 0.675f);
             foreach (Collider collidingCollider in collidingColliders)
             {
                 if (!collidingCollider.transform.CompareTag("Player") && !collidingCollider.transform.CompareTag("Floor")) return;
             }
-
-                
+ 
             float oldY = closeCorner.transform.position.y;
             closeCorner.transform.position = new Vector3(hit.point.x, oldY, hit.point.z);
             Vector3 toOrigin = playZoneOrigin.position - closeCorner.transform.position;
@@ -151,9 +140,8 @@ public class portalgun : MonoBehaviour
         if (!farbuttondown) return;
         farbuttondown = false;
 
-        RaycastHit hit;
         Ray ray = new Ray(transform.position, transform.forward);
-        if (Physics.Raycast(ray, out hit, 100) && hit.collider.gameObject.tag == "Floor" && inFarPlayZone(hit.point))
+        if (Physics.Raycast(ray, out RaycastHit hit, 100) && hit.collider.gameObject.CompareTag("Floor") && InFarPlayZone(hit.point))
         {
             Collider[] collidingColliders = Physics.OverlapCapsule(new Vector3(hit.point.x, 0, hit.point.z), new Vector3(hit.point.x, 3, hit.point.z), 0.675f);
 
@@ -163,8 +151,7 @@ public class portalgun : MonoBehaviour
             }
 
             float oldY = farCorner.transform.position.y;
-            farCorner.transform.position = new Vector3(hit.point.x, oldY, hit.point.z);
-            farCorner.transform.rotation = closeCorner.transform.rotation;
+            farCorner.transform.SetPositionAndRotation(new Vector3(hit.point.x, oldY, hit.point.z), closeCorner.transform.rotation);
 
             audioSource.PlayOneShot(portalShootClip);
 
@@ -210,33 +197,30 @@ public class portalgun : MonoBehaviour
         }
 
         lineRenderer.enabled = true;
-        RaycastHit hit;
-        Ray ray = new Ray(transform.position, transform.forward);
+        lineRenderer.SetPosition(0, transform.position);
+        lineRenderer.SetPosition(1, transform.position + 100 * transform.forward);
         lineRenderer.material.color = Color.red;
-        bool hitSomething = Physics.Raycast(ray, out hit, 100);
+
+        Ray ray = new Ray(transform.position, transform.forward);
+        bool hitSomething = Physics.Raycast(ray, out RaycastHit hit, 100);
 
         if (closebuttondown)
         { 
-            if (hitSomething && hit.collider.gameObject.tag == "Floor" && inPlayZone(hit.point))
+            if (hitSomething && hit.collider.gameObject.CompareTag("Floor") && InPlayZone(hit.point))
             {
                 Collider[] collidingColliders = Physics.OverlapCapsule(new Vector3(hit.point.x, 0, hit.point.z), new Vector3(hit.point.x, 3, hit.point.z), 0.675f);
                 boundingArea.SetActive(true);
                 boundingArea.transform.position = hit.point;
-                bool obstructed = false;
-                for (int a = 0; a < collidingColliders.Length; a = a + 1)
+                foreach (Collider collidingCollider in collidingColliders)
                 {
-                    if(collidingColliders[a].transform.tag != "Player" && collidingColliders[a].transform.tag != "Floor")
-                    {
-                        obstructed = true;
-                        break;
-                    }
+                    if (!collidingCollider.transform.CompareTag("Player") && !collidingCollider.transform.CompareTag("Floor")) return;
                 }
 
-                lineRenderer.material.color = obstructed ? Color.red : Color.green;
+                lineRenderer.material.color = Color.green;
             }
         } else if (farbuttondown)
         {
-            if (hitSomething && hit.collider.gameObject.tag == "Floor" && inFarPlayZone(hit.point))
+            if (hitSomething && hit.collider.gameObject.CompareTag("Floor") && InFarPlayZone(hit.point))
             {
                 Collider[] collidingColliders = Physics.OverlapCapsule(new Vector3(hit.point.x, 0, hit.point.z), new Vector3(hit.point.x, 3, hit.point.z), 0.675f);
                 boundingArea.SetActive(true);
@@ -246,30 +230,24 @@ public class portalgun : MonoBehaviour
                     lineRenderer.material.color = Color.green;
                 }
             }
-        }
-        else if (pointToTeleportButtonDown)
+        } else if (pointToTeleportButtonDown)
         {
-            if (hitSomething && hit.collider.gameObject.tag == "Floor")
+            if (hitSomething && hit.collider.gameObject.CompareTag("Floor"))
             {
                 lineRenderer.material.color = Color.blue;
             }
         }
-
-
-        lineRenderer.SetPosition(0, transform.position);
-        lineRenderer.SetPosition(1, transform.position + 100 * transform.forward);
     }
 
-    bool inPlayZone(Vector3 point)
+    bool InPlayZone(Vector3 point)
     {
         return Mathf.Abs(point.x - playZoneOrigin.position.x) < playzoneX && Mathf.Abs(point.z - playZoneOrigin.position.z) < playZoneZ;
     }
 
-    bool inFarPlayZone(Vector3 point)
+    bool InFarPlayZone(Vector3 point)
     {
         return Mathf.Abs(point.x - playZoneOrigin.position.x) > 2 || Mathf.Abs(point.z - playZoneOrigin.position.z) > 2;
     }
-
 
     private void OnEnable()
     {
