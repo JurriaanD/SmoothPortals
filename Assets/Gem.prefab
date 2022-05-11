@@ -257,6 +257,7 @@ MonoBehaviour:
   collectionEvent:
     m_PersistentCalls:
       m_Calls: []
+  material: {fileID: 0}
   gemModel: {fileID: 1757430818699201642}
   beam: {fileID: 1861091367820736787}
 --- !u!1001 &1756451706805013624
@@ -351,7 +352,8 @@ PrefabInstance:
       propertyPath: rotationAngle.z
       value: 1
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 114000012194588374, guid: 676e107eeafc5524b97910d76516565d, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: 676e107eeafc5524b97910d76516565d, type: 3}
 --- !u!1 &1757430818699201642 stripped
 GameObject:
