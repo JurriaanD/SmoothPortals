@@ -1,0 +1,90 @@
+{
+    "name": "portalgunshoot",
+    "maps": [
+        {
+            "name": "Player",
+            "id": "d20e90e9-d982-440f-98be-47ef27059f3d",
+            "actions": [
+                {
+                    "name": "ShootClosePortal",
+                    "type": "Button",
+                    "id": "3ad348a8-31d4-4ea5-bb72-5f9e18671c52",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": ""
+                },
+                {
+                    "name": "ShootFarPortal",
+                    "type": "Button",
+                    "id": "75ee5a0b-159e-42c6-8ff9-b245dd9647e5",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": ""
+                },
+                {
+                    "name": "SwitchControls",
+                    "type": "Button",
+                    "id": "fb313d78-7490-48ef-9513-e791fc0966f8",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": ""
+                },
+                {
+                    "name": "PointToTeleport",
+                    "type": "Button",
+                    "id": "0b800262-59d1-482b-b092-07851d4a2636",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": ""
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "c25b039d-f69e-4afc-bfd1-e8c507391d41",
+                    "path": "<XRController>{RightHand}/primaryButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ShootClosePortal",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "3f5aae54-decf-4fd7-aa52-08b8298f7e02",
+                    "path": "<XRController>{RightHand}/secondaryButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ShootFarPortal",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "68368a47-237c-48f2-984e-effe51a977c7",
+                    "path": "<XRController>{LeftHand}/primaryButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "SwitchControls",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "4bb2e300-3765-466d-be05-5af01b52d9ea",
+                    "path": "<XRController>{RightHand}/primaryButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "PointToTeleport",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}
